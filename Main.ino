@@ -2,7 +2,6 @@
 //                          LIBRARIES                           //
 //////////////////////////////////////////////////////////////////
 
-
 //LOAD CELL LIB-------------------------------------------------------------------------------------
 #include "HX711.h"
 HX711 scale;
@@ -20,20 +19,17 @@ HX711 scale;
 #include "uRTCLib.h"
 uRTCLib rtc(0x68);  // uRTCLib rtc;
 
-
 //////////////////////////////////////////////////////////////////
 //                           DEFINES                            //
 //////////////////////////////////////////////////////////////////
 
 // LOAD CELL DEFINES--------------------------------------------------------------------------------
 
-
 #define LOADCELL_DOUT_PIN 18
 #define LOADCELL_SCK_PIN 19
 #define calibration_factor 106
 
 int weigth = 0;
-
 
 // OLED DISP DEFINES--------------------------------------------------------------------------------
 
@@ -51,28 +47,24 @@ char Calendar[20];  // string UTF8 end zero
 
 // Motor DEFINES -----------------------------------------------------------------------------
 
-const int enable_motor = 15;
+const int enable_motor = 15;  // Change to defines? #define enable_motor 15
 const int step = 2;
 const int dirPin = 4;
 
-float cal = 49;  // auxiliary declaration
+float cal = 49;  // auxiliary declaration of an initial Calibration value
 
-int16_t Hour_A;  // 32767.. +32767
-int16_t Hour_B;  // 32767.. +32767
+int16_t Hour_A;   // 32767.. +32767  optimize the data type
+int16_t Hour_B;  
 
-int16_t Minute_A;  // 32767.. +32767
-int16_t Minute_B;  // 32767.. +32767
+int16_t Minute_A;  
+int16_t Minute_B;  
 
-
-int16_t Meal_size_A;  // 32767.. +32767
-int16_t Meal_size_B;  // 32767.. +32767
-
-
+int16_t Meal_size_A; 
+int16_t Meal_size_B; 
 
 //////////////////////////////////////////////////////////////////
 //                          FUNCTIONS                           //
 //////////////////////////////////////////////////////////////////
-
 
 void stepper(float Screw_turns, int motorpin, bool direction) {
 
@@ -93,7 +85,6 @@ void stepper(float Screw_turns, int motorpin, bool direction) {
   digitalWrite(enable_motor, HIGH);
 }
 
-
 //--------------------------------------------------------------------------------------
 
 void feed(float cal, int amount) {
@@ -105,10 +96,6 @@ void feed(float cal, int amount) {
   }
   digitalWrite(enable_motor, HIGH);
 }
-
-
-
-
 
 //////////////////////////////////////////////////////////////////
 //                            SETUP                            //
@@ -135,7 +122,7 @@ void setup() {
   long zero_factor = scale.read_average();  //Get a baseline reading
   Serial.print("Zero factor: ");            //This can be used to remove the need to tare the scale. Useful in permanent scale projects.
   Serial.println(zero_factor);
-  scale.tare();  //Reset the scale to 0
+  
 
   //OLED DISP SETUP-------------------------------------------------------------------------------------
   // initialize the OLED object
@@ -146,18 +133,23 @@ void setup() {
   }
   // Clear the buffer.
   display.clearDisplay();
+ 
+//////////////////////////////////////////////////////////////////
+//                    MEAL SCHEDULE SETUP                       //
+//////////////////////////////////////////////////////////////////
 
-  //MEAL SCHEDULE SETUP-------------------------------------------------------------------------------------
+  // Change the time and size of the first meal!
+
   Hour_A = 7;
   Minute_A = 0;
   Meal_size_A = 200;
-
-
+  
+  // Change the time and size of the first meal!
+  
   Hour_B = 16;
   Minute_B = 0;
   Meal_size_B = 200;
 }
-
 
 //////////////////////////////////////////////////////////////////
 //                             MAIN                             //
@@ -167,15 +159,14 @@ int old_weigth = 0;
 int new_weigth = 0;
 
 void loop() {
-  // put your main code here, to run repeatedly:
 
-  sprintf(Calendar, "%02d/%02d/%02d   %02d:%02d:%02d", rtc.day(), rtc.month(), rtc.year(), rtc.hour(), rtc.minute(), rtc.second());
-  Serial.println(Calendar);
-  rtc.refresh();
-  Serial.println(scale.get_units(1));
+  //Updates the data ---------------------------------------------------------------------------------------
 
+  rtc.refresh(); // Check the current time.
+  
+  Serial.println(scale.get_units(1));  // Mesures how much food is inside.
 
-  ///IMPLEMENT FEED----------------------
+  //schedule detection -------------------------------------------------------------------------------------
   if (Hour_A == rtc.hour() && Minute_A == rtc.minute() && 0 == rtc.second()) {
     feed(cal, Meal_size_A);
   }
@@ -185,14 +176,14 @@ void loop() {
   delay(500);
   digitalWrite(enable_motor, HIGH);  //turn off motor
 
+  //TESTING AND TROUBLESHOOTING ---------------------------------------------------------------------------------------
 
-
-
-
+  sprintf(Calendar, "%02d/%02d/%02d   %02d:%02d:%02d", rtc.day(), rtc.month(), rtc.year(), rtc.hour(), rtc.minute(), rtc.second());
+  Serial.println(Calendar);
 
   if (Serial.available()) {
     char but = Serial.read();
-    if (but == '+' || but == 'a'){
+    if (but == '+' || but == 'a'){ // Feeds the meal A. For testing purposes.
 
       old_weigth = scale.get_units(1);
       
@@ -214,10 +205,7 @@ void loop() {
       display.display();
       delay(1000);
     }
-
-
-
-    else if (but == '-' || but == 'z'){
+    else if (but == '-' || but == 'z'){ // This will spin the screw 1kg worth of food. For emptying purposes.
 
       old_weigth = scale.get_units(1);
 
