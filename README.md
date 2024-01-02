@@ -20,7 +20,7 @@ Friendly and easy to maintain.
 
 ![Main_assembly_2024-Jan-01_08-03-29PM-000_CustomizedView67954675853_png](https://github.com/Bifanas/Pet-feeder-Salsador/assets/57753338/ea6b6703-733d-458f-bc58-6ce20b92db19)
 
-Could you keep the previous meals' data to make sure your pet was fed the correct amount?
+Keep the previous meals' data to make sure your pet was fed the correct amount.
 
 ![Main_assembly_2024-Jan-01_08-04-12PM-000_CustomizedView14660919594_png](https://github.com/Bifanas/Pet-feeder-Salsador/assets/57753338/1238fff4-0a9b-459a-94bc-29287b0740e0)
 
