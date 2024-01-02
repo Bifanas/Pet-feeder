@@ -4,7 +4,7 @@ Salsador
 
 ![1](https://github.com/Bifanas/Pet-feeder-Salsador/assets/57753338/a675ab2a-001c-4602-972e-dc04ac68dd0e)
 
-The first version is available to solve the task of deeding your pet remotely.
+The first version is available to solve the task of feeding your pet remotely.
 
 ![Main_assembly_2024-Jan-01_07-59-22PM-000_CustomizedView26077050765_png](https://github.com/Bifanas/Pet-feeder-Salsador/assets/57753338/5422933a-c39f-4e4f-a169-8b9e6703cd65)
 
