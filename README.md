@@ -1,6 +1,42 @@
-# Pet feeder
+# Pet feeder 🐕
 
-Salsador
+We designed an affordable dog feeder suitable for every kibble size and we hope that by sharing it, we can help more dog owners out there to create their perfect solution.
+
+We are a small group of friends, designers, engineers, and dog owners. We needed to ensure our fluffy friends were always fed on time, even when we got stuck at school or work. And as we have large dogs any commercial solutions were unsuitable for our needs. That's how we started developing this dog feeder, first as a student project, and now as a passion. 
+
+Our automated feeder is meant to help keep a consistent feeding schedule and ensure portion control. The design consists of 3d printed parts, a dispensing mechanism controlled by a motor, and a load cell to control the portion size. To run the dog feeder, it is important to set up a feeding schedule and also to manually calibrate the amount of food, that is being dispensed.
+
+## Table of Contents
+- [Features](#features)
+- [List of Materials](#list)
+- [Tutorials](#tutorials)
+- [Contributing](#contributing)
+- [Acknowledgments](#acknowledgments)
+
+<br>
+
+## Features
+With this version of the automated feeder, you know exactly how many grams of food your dog was fed. 
+Features include:
+- manual calibration
+- implemented load cell
+- real time clock
+- feeding schedule
+- portion control and history log
+
+<br>
+
+## Contributing
+1. Fork the repository
+2. Create a new branch: `git checkout -b feature-name`
+3. Make your changes and commit: `git commit -m "Add feature"`
+4. Push to the branch: `git push origin feature-name`
+5. Submit a pull request
+
+<br>
+## Acknowledgments
+- Thanks to [Author Name](https://github.com/author) for the inspiration
+
 
 ![1](https://github.com/Bifanas/Pet-feeder-Salsador/assets/57753338/a675ab2a-001c-4602-972e-dc04ac68dd0e)
 
