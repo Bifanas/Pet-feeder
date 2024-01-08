@@ -1,0 +1,40 @@
+// tutorial from https://peppe8o.com/load-cell-with-arduino-uno-using-hx711-amplification/
+
+#include "HX711.h"
+HX711 scale;
+float callibration_factor = - 22.8; //ALREADY SET
+
+#define DT 16; //pin 16
+#define SCK 16; //pin 14
+
+void setup() {
+  Serial.begin(38400);
+  scale.begin(DT, SCK); //  Initializing the scale
+
+  reading_value();
+  scale.set_scale(callibration_factor); // callibration factor can be called as the multiplication factor of amplification of the voltage
+  scale.tare();                // reset the scale to 0
+  reading_value();
+}
+
+void loop() {
+  Serial.print("one reading:\t");
+  Serial.print(scale.get_units(), 1);
+  Serial.print("\t| average:\t");
+  Serial.println(scale.get_units(10), 1);
+  
+  scale.power_down();             // put the ADC in sleep mode
+  delay(5000);
+  scale.power_up();
+}
+
+void reading_value()
+{
+  Serial.println(scale.read());      // print a raw reading from the ADC
+  Serial.print("read average: \t\t");
+  Serial.println(scale.read_average(20));   // print the average of 20 readings from the ADC
+  Serial.print("get units: \t\t");
+  Serial.println(scale.get_units(5), 1);  // print the average of 5 readings from the ADC minus tare weight (not set) divided
+}
+
+
