@@ -41,9 +41,19 @@ int weigth = 0;
 #define SCREEN_ADDRESS 0x3C
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+
+const int bufferSize = 4;  // Size of the circular buffer
+struct Measurement {
+  char Calendar[20];
+  float weight;
+};
+
+Measurement measurements[bufferSize];  // Array to store the measurements
+int currentIndex = 0;                  // Index to keep track of the current position in the buffer
+
 // RTC DEFINES--------------------------------------------------------------------------------
 
-char Calendar[20];  // string UTF8 end zero
+//char Calendar[20];  // string UTF8 end zero
 
 // Motor DEFINES -----------------------------------------------------------------------------
 
@@ -53,14 +63,14 @@ const int dirPin = 4;
 
 float cal = 49;  // auxiliary declaration of an initial Calibration value
 
-int16_t Hour_A;   // 32767.. +32767  optimize the data type
-int16_t Hour_B;  
+int16_t Hour_A;  // 32767.. +32767  optimize the data type
+int16_t Hour_B;
 
-int16_t Minute_A;  
-int16_t Minute_B;  
+int16_t Minute_A;
+int16_t Minute_B;
 
-int16_t Meal_size_A; 
-int16_t Meal_size_B; 
+int16_t Meal_size_A;
+int16_t Meal_size_B;
 
 //////////////////////////////////////////////////////////////////
 //                          FUNCTIONS                           //
@@ -97,6 +107,63 @@ void feed(float cal, int amount) {
   digitalWrite(enable_motor, HIGH);
 }
 
+char now[20];
+
+void addMeasurement(float newWeight, char current_calendar[]) {
+  // Create a new measurement
+  Measurement newMeasurement;
+  strcpy(newMeasurement.Calendar, current_calendar);  // Use strcpy to copy the content
+  newMeasurement.weight = newWeight;
+
+  // Add the new measurement to the buffer at the current index
+  measurements[currentIndex] = newMeasurement;
+
+  // Increment the current index and wrap around if necessary
+  currentIndex = (currentIndex + 1) % bufferSize;
+}
+
+void Main_screan_print() {
+  Serial.println("Buffer:");
+  // Print the contents of the buffer
+  for (int i = 0; i < bufferSize; i++) {
+    Serial.print("Timestamp: ");
+    Serial.print(measurements[i].Calendar);
+    Serial.print(" Weight: ");
+    Serial.println(measurements[i].weight, 2);
+  }
+  Serial.println();
+
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
+  display.print(rtc.hour());
+  display.print(":");
+  display.print(rtc.minute());
+  display.print(":");
+  display.print(rtc.second());
+  display.setTextSize(1);
+  display.print(" ");
+  display.print(rtc.day());
+  display.print("/");
+  display.print(rtc.month());
+
+  display.setCursor(0, 25);
+  display.setTextSize(1);
+
+  for (int i = 0; i < bufferSize; i++) {
+    //display.print("");
+    
+    display.print(measurements[i].Calendar);
+    display.print(" ");
+    display.print(measurements[i].weight);
+    display.println(" g");    
+  }
+
+
+  display.display();
+}
+
 //////////////////////////////////////////////////////////////////
 //                            SETUP                            //
 //////////////////////////////////////////////////////////////////
@@ -122,7 +189,7 @@ void setup() {
   long zero_factor = scale.read_average();  //Get a baseline reading
   Serial.print("Zero factor: ");            //This can be used to remove the need to tare the scale. Useful in permanent scale projects.
   Serial.println(zero_factor);
-  
+
 
   //OLED DISP SETUP-------------------------------------------------------------------------------------
   // initialize the OLED object
@@ -133,20 +200,20 @@ void setup() {
   }
   // Clear the buffer.
   display.clearDisplay();
- 
-//////////////////////////////////////////////////////////////////
-//                    MEAL SCHEDULE SETUP                       //
-//////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////
+  //                    MEAL SCHEDULE SETUP                       //
+  //////////////////////////////////////////////////////////////////
 
   // Change the time and size of the first meal!
 
-  Hour_A = 7;
+  Hour_A = 8;
   Minute_A = 0;
   Meal_size_A = 200;
-  
+
   // Change the time and size of the first meal!
-  
-  Hour_B = 16;
+
+  Hour_B = 17;
   Minute_B = 0;
   Meal_size_B = 200;
 }
@@ -162,70 +229,40 @@ void loop() {
 
   //Updates the data ---------------------------------------------------------------------------------------
 
-  rtc.refresh(); // Check the current time.
-  
-  Serial.println(scale.get_units(1));  // Mesures how much food is inside.
+  rtc.refresh();  // Check the current time.
+
+  sprintf(now, "%02d/%02d %02d:%02d", rtc.day(), rtc.month(), rtc.hour(), rtc.minute());
+  Serial.println(now);
+  Main_screan_print();
+
+  Serial.println(scale.get_units(5));  // Mesures how much food is inside.
 
   //schedule detection -------------------------------------------------------------------------------------
   if (Hour_A == rtc.hour() && Minute_A == rtc.minute() && 0 == rtc.second()) {
+
+    old_weigth = scale.get_units(5);
+
     feed(cal, Meal_size_A);
+    delay(1000);
+
+    new_weigth = scale.get_units(5);
+    old_weigth = old_weigth - new_weigth;
+
+    addMeasurement(old_weigth, now);
   }
   if (Hour_B == rtc.hour() && Minute_B == rtc.minute() && 0 == rtc.second()) {
+    
+    old_weigth = scale.get_units(5);
+    
     feed(cal, Meal_size_B);
+    delay(1000);
+
+    new_weigth = scale.get_units(5);
+    old_weigth = old_weigth - new_weigth;
+
+    addMeasurement(old_weigth, now);
   }
   delay(500);
   digitalWrite(enable_motor, HIGH);  //turn off motor
 
-  //TESTING AND TROUBLESHOOTING ---------------------------------------------------------------------------------------
-
-  sprintf(Calendar, "%02d/%02d/%02d   %02d:%02d:%02d", rtc.day(), rtc.month(), rtc.year(), rtc.hour(), rtc.minute(), rtc.second());
-  Serial.println(Calendar);
-
-  if (Serial.available()) {
-    char but = Serial.read();
-    if (but == '+' || but == 'a'){ // Feeds the meal A. For testing purposes.
-
-      old_weigth = scale.get_units(1);
-      
-      feed(cal, Meal_size_A);
-      delay(1000);
-      
-      new_weigth = scale.get_units(1);
-      old_weigth = old_weigth - new_weigth;
-
-      display.clearDisplay();
-      display.setTextSize(1);
-      display.setTextColor(WHITE);
-      display.setCursor(40, 10);
-      display.println("Dog ate!");
-      display.setTextSize(2);
-      display.setCursor(30, 35);
-      display.print(old_weigth);
-      display.println(" g");
-      display.display();
-      delay(1000);
-    }
-    else if (but == '-' || but == 'z'){ // This will spin the screw 1kg worth of food. For emptying purposes.
-
-      old_weigth = scale.get_units(1);
-
-      feed(cal, 1000);
-      delay(1000);
-
-      new_weigth = scale.get_units(1);
-      old_weigth = old_weigth - new_weigth;
-
-      display.clearDisplay();
-      display.setTextSize(1);
-      display.setTextColor(WHITE);
-      display.setCursor(40, 10);
-      display.println("Dog ate!");
-      display.setTextSize(2);
-      display.setCursor(30, 35);
-      display.print(old_weigth);
-      display.println(" g");
-      display.display();
-      delay(1000);
-    }
-  }
 }
