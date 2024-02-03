@@ -225,6 +225,9 @@ void setup() {
 int old_weigth = 0;
 int new_weigth = 0;
 
+unsigned long seconds = 1000L;  
+unsigned long minutes = seconds * 60;
+
 void loop() {
 
   //Updates the data ---------------------------------------------------------------------------------------
@@ -243,7 +246,7 @@ void loop() {
     old_weigth = scale.get_units(5);
 
     feed(cal, Meal_size_A);
-    delay(1000);
+    delay(5*minutes);
 
     new_weigth = scale.get_units(5);
     old_weigth = old_weigth - new_weigth;
@@ -255,7 +258,7 @@ void loop() {
     old_weigth = scale.get_units(5);
     
     feed(cal, Meal_size_B);
-    delay(1000);
+    delay(5*minutes);
 
     new_weigth = scale.get_units(5);
     old_weigth = old_weigth - new_weigth;
