@@ -48,7 +48,7 @@ The first version is available to solve the task of feeding your pet remotely.
 
 Unique mechanism that is compatible with any size of dog kibble. 
 
-![Assembly_2024-Jun-15_04-08-37PM-000_CustomizedView19944176708_png](https://github.com/Bifanas/Pet-feeder/assets/57753338/69a9edd7-1725-467f-b688-d20451f5c0d2)
+![4](https://github.com/Bifanas/Pet-feeder/assets/57753338/9dee9818-6d43-431d-92db-49c52b5e3771)
 
 It is possible to expand the storage size, for larger breads.
 
