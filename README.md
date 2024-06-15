@@ -2,8 +2,7 @@
 
 We designed an affordable dog feeder suitable for every kibble size and we hope that by sharing it, we can help more dog owners out there to create their perfect solution.
 
-![3](https://github.com/Bifanas/Pet-feeder/assets/57753338/c0882ed7-55fd-4158-b290-d2775c657e88)
-
+![3](https://github.com/Bifanas/Pet-feeder/assets/57753338/57f19a28-7bf7-41d2-9f29-b86dab6c2e2a)
 
 We are a small group of friends, designers, engineers, and dog owners. We needed to ensure our fluffy friends were always fed on time, even when we got stuck at school or work. And as we have large dogs any commercial solutions were unsuitable for our needs. That's how we started developing this dog feeder, first as a student project, and now as a passion. 
 
