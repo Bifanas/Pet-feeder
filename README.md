@@ -2,6 +2,9 @@
 
 We designed an affordable dog feeder suitable for every kibble size and we hope that by sharing it, we can help more dog owners out there to create their perfect solution.
 
+![3](https://github.com/Bifanas/Pet-feeder/assets/57753338/c0882ed7-55fd-4158-b290-d2775c657e88)
+
+
 We are a small group of friends, designers, engineers, and dog owners. We needed to ensure our fluffy friends were always fed on time, even when we got stuck at school or work. And as we have large dogs any commercial solutions were unsuitable for our needs. That's how we started developing this dog feeder, first as a student project, and now as a passion. 
 
 Our automated feeder is meant to help keep a consistent feeding schedule and ensure portion control. The design consists of 3d printed parts, a dispensing mechanism controlled by a motor, and a load cell to control the portion size. To run the dog feeder, it is important to set up a feeding schedule and also to manually calibrate the amount of food, that is being dispensed.
