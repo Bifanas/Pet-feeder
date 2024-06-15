@@ -25,9 +25,9 @@ uRTCLib rtc(0x68);  // uRTCLib rtc;
 
 // LOAD CELL DEFINES--------------------------------------------------------------------------------
 
-#define LOADCELL_DOUT_PIN 18
-#define LOADCELL_SCK_PIN 19
-#define calibration_factor 106
+#define LOADCELL_DOUT_PIN 2
+#define LOADCELL_SCK_PIN 0
+float calibration_factor = 27; //need to czech
 
 int weigth = 0;
 
@@ -57,11 +57,14 @@ int currentIndex = 0;                  // Index to keep track of the current pos
 
 // Motor DEFINES -----------------------------------------------------------------------------
 
-const int enable_motor = 15;  // Change to defines? #define enable_motor 15
-const int step = 2;
-const int dirPin = 4;
 
-float cal = 49;  // auxiliary declaration of an initial Calibration value
+ // Motor A connections
+#define enA 15
+#define in1 13
+#define in2 12
+
+float cal = 0.0007;  // auxiliary declaration of an initial Calibration value
+// calibration for 6V 10rpm float cal = 0.00075;
 
 int16_t Hour_A;  // 32767.. +32767  optimize the data type
 int16_t Hour_B;
@@ -72,40 +75,40 @@ int16_t Minute_B;
 int16_t Meal_size_A;
 int16_t Meal_size_B;
 
+
 //////////////////////////////////////////////////////////////////
 //                          FUNCTIONS                           //
 //////////////////////////////////////////////////////////////////
 
-void stepper(float Screw_turns, int motorpin, bool direction) {
+void MotorControl(float time, bool direrction) {
+  analogWrite(enA, 255); // Set motors to maximum speed
 
-  int speed = 600;  //NEEDS TO BE CALIBRATED !!!
-  int full_turn = 4000;
-
-  int steps = Screw_turns * full_turn;  // get how many steps
-
-  digitalWrite(enable_motor, LOW);
-  digitalWrite(dirPin, direction);
-
-  for (int x = 0; x < steps; x++) {
-    digitalWrite(motorpin, HIGH);
-    delayMicroseconds(speed);
-    digitalWrite(motorpin, LOW);
-    delayMicroseconds(speed);
+  if (direrction) {
+    digitalWrite(in1, HIGH);  // 1 Forward
+    digitalWrite(in2, LOW);
+  } else if (!direrction) {  // 0 Reverse
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, HIGH);
   }
-  digitalWrite(enable_motor, HIGH);
+  delay(time); // Keep spinning (Food control) 
+  
+  digitalWrite(in1, LOW); // Turn off motors
+  digitalWrite(in2, LOW);
+
+  analogWrite(enA, 0); // Disable the motors
 }
 
 //--------------------------------------------------------------------------------------
 
+
 void feed(float cal, int amount) {
-  //  to get how many turns to get 50g
-  float turns = 50 / cal;
-  for (int i = 0; i <= amount; i = i + 50) {
-    stepper(turns, step, HIGH);  //1 turn = 4000 steps = 103g
-    stepper(0.2, step, LOW);     //spins backwards chug control
+   float turns = 50 / cal; //  to get how many turns to get 50g
+  for (int i = 0; i <= amount; i = i + 50) { // feeds in 50g pulses
+  MotorControl(turns, 1); // Spins forward
+  MotorControl(1000, 0);  // Spins backwards
   }
-  digitalWrite(enable_motor, HIGH);
 }
+
 
 char now[20];
 
@@ -122,9 +125,11 @@ void addMeasurement(float newWeight, char current_calendar[]) {
   currentIndex = (currentIndex + 1) % bufferSize;
 }
 
-void Main_screan_print() {
-  Serial.println("Buffer:");
+void Main_screan_print() { // Some bugs here
+  //Serial.println("Buffer:");
   // Print the contents of the buffer
+
+  /*
   for (int i = 0; i < bufferSize; i++) {
     Serial.print("Timestamp: ");
     Serial.print(measurements[i].Calendar);
@@ -132,6 +137,7 @@ void Main_screan_print() {
     Serial.println(measurements[i].weight, 2);
   }
   Serial.println();
+  */
 
   display.clearDisplay();
   display.setTextSize(2);
@@ -151,8 +157,9 @@ void Main_screan_print() {
   display.setCursor(0, 25);
   display.setTextSize(1);
 
+
   for (int i = 0; i < bufferSize; i++) {
-    //display.print("");
+   //display.print("");
     
     display.print(measurements[i].Calendar);
     display.print(" ");
@@ -160,26 +167,29 @@ void Main_screan_print() {
     display.println(" g");    
   }
 
-
   display.display();
 }
 
-//////////////////////////////////////////////////////////////////
-//                            SETUP                            //
-//////////////////////////////////////////////////////////////////
 
 void setup() {
+
   Serial.begin(9600);
   // MOTOR SETUP-----------------------------------------------------------------------------
 
-  pinMode(enable_motor, OUTPUT);
-  pinMode(step, OUTPUT);
-  pinMode(dirPin, OUTPUT);
+  // Set all the motor control pins to outputs
+  pinMode(enA, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+
+  // Turn off motors - Initial state
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
 
   // RTC SETUP-------------------------------------------------------------------------
 
   URTCLIB_WIRE.begin();
-  // rtc.set(0, 52, 22, 4, 22, 11, 2023);  // rtc.set(second, minute, hour, dayOfWeek, dayOfMonth, month, year)
+
+  //rtc.set(0,15,23, 1, 30, 5, 2024);  //(second, minute, hour, dayOfWeek, dayOfMonth, month, year)
 
   //LOAD CELL SETUP-------------------------------------------------------------------------------------
 
@@ -200,6 +210,7 @@ void setup() {
   }
   // Clear the buffer.
   display.clearDisplay();
+
 
   //////////////////////////////////////////////////////////////////
   //                    MEAL SCHEDULE SETUP                       //
@@ -228,17 +239,18 @@ int new_weigth = 0;
 unsigned long seconds = 1000L;  
 unsigned long minutes = seconds * 60;
 
-void loop() {
 
-  //Updates the data ---------------------------------------------------------------------------------------
+void loop() {
+    //Updates the data ---------------------------------------------------------------------------------------
 
   rtc.refresh();  // Check the current time.
 
   sprintf(now, "%02d/%02d %02d:%02d", rtc.day(), rtc.month(), rtc.hour(), rtc.minute());
   Serial.println(now);
+
   Main_screan_print();
 
-  Serial.println(scale.get_units(5));  // Mesures how much food is inside.
+ // Serial.println(scale.get_units(5));  // Mesures how much food is inside.
 
   //schedule detection -------------------------------------------------------------------------------------
   if (Hour_A == rtc.hour() && Minute_A == rtc.minute() && 0 == rtc.second()) {
@@ -258,14 +270,11 @@ void loop() {
     old_weigth = scale.get_units(5);
     
     feed(cal, Meal_size_B);
-    delay(5*minutes);
+   // delay(5*minutes);
 
     new_weigth = scale.get_units(5);
     old_weigth = old_weigth - new_weigth;
 
     addMeasurement(old_weigth, now);
   }
-  delay(500);
-  digitalWrite(enable_motor, HIGH);  //turn off motor
-
 }
