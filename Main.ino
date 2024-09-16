@@ -25,9 +25,9 @@ uRTCLib rtc(0x68);  // uRTCLib rtc;
 
 // LOAD CELL DEFINES--------------------------------------------------------------------------------
 
-#define LOADCELL_DOUT_PIN 2
-#define LOADCELL_SCK_PIN 0
-float calibration_factor = 27; //need to czech
+#define LOADCELL_DOUT_PIN 13
+#define LOADCELL_SCK_PIN 15
+float calibration_factor = 23.5; //need to czech
 
 int weigth = 0;
 
@@ -59,12 +59,12 @@ int currentIndex = 0;                  // Index to keep track of the current pos
 
 
  // Motor A connections
-#define enA 15
-#define in1 13
-#define in2 12
+#define enA 17
+#define in1 16
+#define in2 14
 
-float cal = 0.0007;  // auxiliary declaration of an initial Calibration value
-// calibration for 6V 10rpm float cal = 0.00075;
+float cal = 17.7;  // auxiliary declaration of an initial Calibration value
+// calibration for 12V 28rpm float cal = 17.7;
 
 int16_t Hour_A;  // 32767.. +32767  optimize the data type
 int16_t Hour_B;
@@ -102,8 +102,8 @@ void MotorControl(float time, bool direrction) {
 
 
 void feed(float cal, int amount) {
-   float turns = 50 / cal; //  to get how many turns to get 50g
-  for (int i = 0; i <= amount; i = i + 50) { // feeds in 50g pulses
+   float turns = 2900 * (50/ cal); //  (2900) = 1 tunr, 50g = portion size, cal = 18g per turn
+  for (int i = 0; i < amount; i = i + 50) { // feeds in 50g pulses
   MotorControl(turns, 1); // Spins forward
   MotorControl(1000, 0);  // Spins backwards
   }
@@ -125,7 +125,7 @@ void addMeasurement(float newWeight, char current_calendar[]) {
   currentIndex = (currentIndex + 1) % bufferSize;
 }
 
-void Main_screan_print() { // Some bugs here
+void Main_screan_print() {
   //Serial.println("Buffer:");
   // Print the contents of the buffer
 
@@ -189,7 +189,7 @@ void setup() {
 
   URTCLIB_WIRE.begin();
 
-  //rtc.set(0,15,23, 1, 30, 5, 2024);  //(second, minute, hour, dayOfWeek, dayOfMonth, month, year)
+  //rtc.set(0,50,21, 6, 31, 8, 2024);  //(second, minute, hour, dayOfWeek, dayOfMonth, month, year)
 
   //LOAD CELL SETUP-------------------------------------------------------------------------------------
 
@@ -240,6 +240,7 @@ unsigned long seconds = 1000L;
 unsigned long minutes = seconds * 60;
 
 
+
 void loop() {
     //Updates the data ---------------------------------------------------------------------------------------
 
@@ -270,11 +271,11 @@ void loop() {
     old_weigth = scale.get_units(5);
     
     feed(cal, Meal_size_B);
-   // delay(5*minutes);
+    delay(5*minutes);
 
     new_weigth = scale.get_units(5);
     old_weigth = old_weigth - new_weigth;
-
     addMeasurement(old_weigth, now);
   }
+  delay(500);
 }
